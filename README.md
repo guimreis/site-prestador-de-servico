@@ -17,9 +17,10 @@ perguntas, manda fotos e clica em alguns botões. Separe uma hora, com calma.
 
 1. Um computador (Mac ou Windows). Pelo celular não dá.
 2. Uma assinatura paga do Claude (plano Pro ou acima), em claude.ai.
-3. Uma conta Google, para gerar as imagens.
-4. O número do seu WhatsApp e o @ do seu Instagram.
-5. De 6 a 10 fotos dos seus melhores serviços. As do Instagram servem.
+3. O número do seu WhatsApp e o @ do seu Instagram.
+4. Se tiver, de 6 a 10 fotos dos seus serviços ou do seu espaço. As do Instagram servem.
+   Não tem foto? Tudo bem: o Claude busca imagens livres, com a licença anotada, ou
+   desenha uma ilustração para o seu site.
 
 Regra de ouro: **travou em qualquer passo, tire um print da tela e mande para o Claude**,
 escrevendo "travei aqui, me ajuda". Sempre funciona melhor do que tentar adivinhar.
@@ -37,7 +38,9 @@ escrevendo "travei aqui, me ajuda". Sempre funciona melhor do que tentar adivinh
 1. Na sua Mesa (Área de Trabalho), crie uma pasta chamada `meu-site`.
 2. Coloque nela as fotos dos seus serviços e o seu logo, se tiver.
 
-Tudo o que o Claude fizer vai ficar dentro dessa pasta.
+Tudo o que o Claude fizer vai ficar dentro dessa pasta. Ele organiza assim: suas
+anotações em `_projeto`, as fotos em `fotos` e o site em `site`. Só a pasta `site` vai
+para a internet.
 
 ## Passo 3. Abra o Claude no modo Code
 
@@ -81,18 +84,19 @@ O Claude procura os sites que mais aparecem na sua cidade, nas cidades vizinhas 
 mais próxima. Ele te mostra quanto a briga é dura na sua região e o que os melhores fazem.
 Você só lê e diz se concorda.
 
-## Passo 7. Faça as imagens no Google Flow
+## Passo 7. Escolha as imagens
 
-O Claude escreve um texto pronto (o "prompt") para cada imagem: a capa do site e o antes e
-depois dos seus serviços.
+O site nunca sai sem foto. O Claude junta as imagens por até quatro caminhos e te mostra
+antes de usar:
 
-1. Entre em labs.google/flow com a sua conta Google.
-2. Anexe a foto que o Claude indicar.
-3. Cole o prompt que ele escreveu.
-4. Gere, escolha a que ficou melhor e baixe.
-5. Coloque na pasta `meu-site/fotos/geradas` e avise o Claude.
+1. As suas fotos, recortadas e leves.
+2. Fotos de bancos de imagem livres, com o autor e a licença de cada uma anotados.
+3. Se você quiser, imagens geradas no Google Flow (labs.google/flow, com a sua conta
+   Google): ele escreve o texto pronto, você cola, gera e baixa para `meu-site/fotos/geradas`.
+4. Uma ilustração desenhada por ele, com as cores do seu site.
 
-Se não quiser mexer com imagem agora, diga a ele. O site sai com as suas fotos como estão.
+Você só diz de quais gostou. Dentista, médico, advogado e contador: o Claude segue as
+regras de publicidade do seu conselho (nada de antes e depois, preço ou promessa).
 
 ## Passo 8. Veja o site antes de publicar
 
@@ -164,11 +168,17 @@ grava um arquivo de retomada na pasta, e da próxima vez você começa por ele.
 - `skills/site-prestador-de-servico/SKILL.md`: o manual que o Claude segue.
 - `references/`: a pesquisa regional, as imagens, o texto, os arquivos para as IAs e a
   publicação.
+- `references/design.md` e `references/profissoes-com-conselho.md`: o visual e as regras
+  de OAB, CRO, CRM e CRC.
 - `scripts/revisar_textos.py`: o detector de texto com cara de IA.
+- `scripts/conferir_site.py`: a conferência antes de publicar (imagens, anotações fora da
+  pasta do site, endereço que falta trocar).
+- `scripts/test_*.py`: os testes dos dois scripts (`python3 -m unittest discover scripts`).
 
 A skill se apoia em outras skills públicas, cada uma com os seus autores: `grill-me`
 (Matt Pocock), `find-skills` (Vercel), `frontend-design` (Anthropic), `seo-local`
-(AgriciDaniel) e `copywriting` e `copy-editing` (Corey Haines).
+(AgriciDaniel) e `copywriting` e `copy-editing` (Corey Haines). Nenhuma é obrigatória: se
+faltar alguma, a skill segue pelo plano B.
 
 ## Quem fez
 

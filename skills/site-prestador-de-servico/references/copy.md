@@ -10,6 +10,9 @@ Duas fontes se somam aqui:
 
 Quando as duas discordarem, vale a primeira.
 
+Sem as skills `copywriting` e `copy-editing` instaladas, esta página basta: as seções
+"Escrever" e "Revisar" abaixo trazem o que importa delas.
+
 ## A voz
 
 O site fala como o prestador fala com o cliente no WhatsApp. Leia as respostas dele no
@@ -27,17 +30,30 @@ compromisso", "capricho", essas palavras entram. Site de pintor não fala como b
    para provar? Um concorrente poderia escrever a mesma frase? Se o concorrente poderia,
    reescreva com o que só esse prestador tem.
 6. Número, avaliação ou depoimento só se o prestador confirmar. Faltou prova? Marque
-   `[FALTA: ...]` e pergunte. Nunca invente.
+   `[PREENCHER: o que falta]` e pergunte. Nunca invente. O `scripts/conferir_site.py`
+   não deixa publicar com `[PREENCHER]` sobrando.
+7. Profissão com conselho de classe: leia antes
+   [profissoes-com-conselho.md](profissoes-com-conselho.md). Preço, "grátis", promessa de
+   resultado, superlativo e depoimento ficam de fora.
 
 ## Revisar (copy-editing e o detector)
 
-1. Passe as sete revisões da `copy-editing` (clareza, voz, "e daí?", prova,
-   especificidade, emoção, risco zero).
+1. Passe as sete revisões da `copy-editing`, uma por vez, no texto inteiro:
+   1. Clareza: um cliente de 14 anos entenderia?
+   2. Voz: soa como o prestador fala no WhatsApp?
+   3. "E daí?": cada frase diz o que o cliente ganha?
+   4. Prova: o que afirma, dá para mostrar?
+   5. Especificidade: troque "qualidade" e "excelência" pelo fato (horário, prazo, garantia).
+   6. Emoção: o problema do cliente aparece com as palavras dele?
+   7. Risco zero: o que tira o medo de chamar (orçamento por escrito, sem compromisso)?
 2. Rode o detector:
 
 ```bash
 python3 scripts/revisar_textos.py site/index.html
 ```
+
+   Ele responde "1 arquivo lido. Nenhum achado." quando está limpo. Se disser "Nenhum
+   arquivo para revisar", o caminho está errado.
 
 3. Tudo de peso 3 sai. O teste da antítese negada: apague a metade negativa ("não é só
    pintar, é...") e leia o que sobrou. Se a frase fica de pé, a metade negativa era enfeite.

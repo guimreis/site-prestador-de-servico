@@ -50,3 +50,15 @@ Uma tabela por camada e, em cima dela, cinco linhas:
 
 Grave tudo em `pesquisa.md`, com a data da pesquisa. O resultado de busca muda com o
 tempo e com quem pesquisa: diga isso numa linha, sem exagerar a precisão.
+
+## Plano B: sem busca na web
+
+Se a ferramenta de busca não existir ou falhar:
+
+1. Se houver um navegador que o Claude controla, faça as buscas por ele, uma por vez.
+2. Se não houver, peça ao prestador: "Busque no Google '<serviço> em <cidade>' e me mande
+   um print da primeira página". Uma busca por camada basta.
+3. Sem nenhum dos dois, pule a tabela, use a estrutura padrão da Etapa 5 e escreva em
+   `pesquisa.md`: "Pesquisa não feita em <data>: sem busca. Refazer antes da próxima
+   atualização." O site sai do mesmo jeito: a pesquisa só melhora o texto.
+

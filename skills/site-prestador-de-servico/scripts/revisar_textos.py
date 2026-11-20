@@ -25,9 +25,10 @@ achado de menu apareceria em todas as paginas do site. Ignora tambem blocos de
 FAQ (details/summary), onde pergunta seguida de resposta e o formato correto.
 
 Bloco marcado `class="pergunta-resposta"` tem isencao ESTREITA: so o padrao da
-pergunta autorrespondida e dispensado ali. E o caso do painel de grafico, em que
-a trilha `grafico` manda escrever a pergunta e responde-la no titulo. Dentro do
-bloco, "a gente", emoji e antitese negada continuam sendo defeito.
+pergunta autorrespondida e dispensado ali. Dentro do bloco, antitese negada e
+o resto continuam sendo defeito.
+
+Saida: 0 sem achado, 1 com achado, 2 quando nenhum arquivo foi lido.
 """
 
 import argparse
@@ -45,8 +46,11 @@ import sys
 # --------------------------------------------------------------------------
 PADROES = [
     ("antitese-negada", "Antitese negada", 3,
-     r"\bn[ãa]o\s+\w+[^.!?;]{0,90}?,\s*(?:é|e)\s+\w|"
-     r"\bn[ãa]o\s+(come[çc]\w+|é|e|foi|se\s+trata)\b[^.!?]{0,70}\.\s*\1",
+     # (?i) vale para as duas metades: a antitese que abre a frase com "Nao" maiusculo
+     # ("Nao e promessa. E metodo.") passava em branco. A segunda metade pega o verbo
+     # repetido na frase seguinte ("Nao vendemos X. Vendemos Y.").
+     r"(?i)\bn[ãa]o\s+\w+[^.!?;]{0,90}?,\s*(?:é|e)\s+\w|"
+     r"\bn[ãa]o\s+(\w+)\b[^.!?]{0,70}[.!:;]\s*\1\b",
      "Afirme o Y direto. O leitor nao precisa do X que voce descartou."),
 
     ("antitese-invertida", "Antitese invertida (X, nao Y)", 3,
@@ -276,13 +280,14 @@ def main():
     args = ap.parse_args()
 
     exts = {e.strip().lstrip(".").lower() for e in args.ext.split(",")}
-    relatorio, total, por_padrao = [], 0, {}
+    relatorio, total, por_padrao, lidos = [], 0, {}, 0
 
     for caminho in arquivos_de(args.caminhos, exts):
         try:
             achados = [a for a in achados_de(*extrai_texto(caminho)) if a["peso"] >= args.peso]
         except OSError:
             continue
+        lidos += 1
         if len(achados) < args.min:
             continue
         achados.sort(key=lambda a: -a["peso"])
@@ -294,15 +299,25 @@ def main():
 
     relatorio.sort(key=lambda r: -r["pontos"])
 
-    if args.json:
-        print(json.dumps({"total": total, "arquivos": relatorio},
-                         ensure_ascii=False, indent=1))
-        return 0
+    # Nenhum arquivo lido nao e "texto limpo": e caminho errado ou extensao de fora.
+    if lidos == 0:
+        print("Nenhum arquivo para revisar em: %s (extensoes: %s)" %
+              (", ".join(args.caminhos), ",".join(sorted(exts))), file=sys.stderr)
+        return 2
 
+    if args.json:
+        print(json.dumps({"lidos": lidos, "total": total, "arquivos": relatorio},
+                         ensure_ascii=False, indent=1))
+        return 1 if total else 0
+
+    lido_txt = "%d arquivo lido" % lidos if lidos == 1 else "%d arquivos lidos" % lidos
     linhas = []
     linhas.append("# Revisao de texto: estruturas que soam geradas por IA")
     linhas.append("")
-    linhas.append("%d achados em %d arquivos." % (total, len(relatorio)))
+    if total:
+        linhas.append("%s. %d achado(s) em %d arquivo(s)." % (lido_txt, total, len(relatorio)))
+    else:
+        linhas.append("%s. Nenhum achado." % lido_txt)
     linhas.append("")
     if por_padrao:
         linhas.append("| Padrao | Ocorrencias |")
@@ -325,8 +340,7 @@ def main():
     if args.md:
         with open(args.md, "w", encoding="utf-8") as fh:
             fh.write(texto)
-        print("relatorio em %s | %d achados em %d arquivos" %
-              (args.md, total, len(relatorio)))
+        print("relatorio em %s | %s | %d achado(s)" % (args.md, lido_txt, total))
     else:
         print(texto)
 

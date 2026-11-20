@@ -25,7 +25,9 @@ npx wrangler pages project create nome-do-negocio --production-branch main
 
    Se o nome já existir, a Cloudflare recusa: escolha outro com a cidade no fim
    (`nome-do-negocio-pg`).
-5. **Publicar.** Da pasta do projeto, publique só a pasta do site:
+5. **Publicar.** Antes, rode `python3 scripts/conferir_site.py site`: nada pode estar
+   bloqueando. Depois, da pasta do projeto, publique **só a pasta `site/`**. Nunca publique
+   a pasta do projeto inteira (`.`): o briefing e as anotações iriam junto.
 
 ```bash
 npx wrangler pages deploy site --project-name nome-do-negocio
@@ -38,8 +40,14 @@ npx wrangler pages deploy site --project-name nome-do-negocio
 curl -sI https://nome-do-negocio.pages.dev | grep -i -E "content-security|strict-transport"
 ```
 
-7. **Endereço definitivo nos arquivos.** Troque `SEU-SITE.pages.dev` pelo endereço real
-   no `index.html`, `robots.txt`, `sitemap.xml` e `llms.txt`, e publique de novo (passo 5).
+7. **Endereço definitivo nos arquivos.** Um comando troca `PREENCHER-ENDERECO` pelo
+   endereço real em todos os arquivos de `site/` e confere de novo:
+
+```bash
+python3 scripts/conferir_site.py site --endereco https://nome-do-negocio.pages.dev
+```
+
+   Depois, publique de novo (passo 5).
 
 Para atualizar o site depois, é sempre o passo 5.
 
@@ -50,7 +58,7 @@ Se o plano A travar em qualquer passo:
 1. Entrar em dash.cloudflare.com.
 2. No menu, **Workers e Pages** (Workers & Pages), depois **Criar** (Create).
 3. Escolher **Pages** e a opção de enviar arquivos (**Upload assets**).
-4. Dar o nome do projeto e arrastar a pasta `site` inteira.
+4. Dar o nome do projeto e arrastar a pasta `site` (só ela, nunca a pasta do projeto).
 5. **Implantar** (Deploy). O endereço aparece no fim.
 
 A tela da Cloudflare muda de tempos em tempos. Se não achar um botão, tire um print e mande
@@ -71,4 +79,6 @@ Só depois que o site estiver no ar no endereço `.pages.dev`.
 4. Quando a Cloudflare disser que o domínio está ativo: no projeto em Workers e Pages,
    **Domínios personalizados** (Custom domains), adicionar `seudominio.com.br` e
    `www.seudominio.com.br`.
-5. Trocar o endereço nos arquivos (passo 7 do plano A) pelo domínio novo e publicar de novo.
+5. Trocar o endereço nos arquivos pelo domínio novo e publicar de novo. Se o endereço
+   `.pages.dev` já estava nos arquivos, troque com um localizar e substituir em `site/`
+   e rode `python3 scripts/conferir_site.py site` de novo.

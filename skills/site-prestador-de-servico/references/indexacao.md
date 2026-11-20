@@ -1,8 +1,15 @@
 # Os arquivos que deixam o site legível para o Google e as IAs
 
-Troque `SEU-SITE.pages.dev` pelo endereço de verdade assim que ele existir (depois da
-primeira publicação, ou do domínio próprio). Endereço errado nesses arquivos manda o robô
-para um lugar que não existe.
+O endereço do site só existe depois da primeira publicação. Até lá, escreva
+`https://PREENCHER-ENDERECO/` em todo lugar que pede o endereço. Depois de publicar, um
+comando troca tudo de uma vez:
+
+```bash
+python3 scripts/conferir_site.py site --endereco https://nome-do-negocio.pages.dev
+```
+
+Esquecer a troca manda o robô para um endereço que não existe; por isso o conferidor
+lista cada `PREENCHER-ENDERECO` que sobrou.
 
 ## 1. No `<head>` do `index.html`
 
@@ -10,13 +17,13 @@ para um lugar que não existe.
 <html lang="pt-BR">
 <title>Pintor em Ponta Grossa | Nome do Prestador</title>          <!-- até 60 caracteres -->
 <meta name="description" content="...">                            <!-- até 155 caracteres -->
-<link rel="canonical" href="https://SEU-SITE.pages.dev/">
+<link rel="canonical" href="https://PREENCHER-ENDERECO/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="...">
 <meta property="og:description" content="...">
-<meta property="og:url" content="https://SEU-SITE.pages.dev/">
-<meta property="og:image" content="https://SEU-SITE.pages.dev/img/previa-site.jpg">
+<meta property="og:url" content="https://PREENCHER-ENDERECO/">
+<meta property="og:image" content="https://PREENCHER-ENDERECO/img/previa-site.jpg">
 <meta name="twitter:card" content="summary_large_image">
 ```
 
@@ -36,11 +43,11 @@ Use o tipo mais específico do schema.org para o serviço: `HousePainter`, `Elec
   "@graph": [
     {
       "@type": "HousePainter",
-      "@id": "https://SEU-SITE.pages.dev/#negocio",
+      "@id": "https://PREENCHER-ENDERECO/#negocio",
       "name": "Nome do Prestador",
       "description": "Uma frase sobre o serviço e a região.",
-      "url": "https://SEU-SITE.pages.dev/",
-      "image": "https://SEU-SITE.pages.dev/img/previa-site.jpg",
+      "url": "https://PREENCHER-ENDERECO/",
+      "image": "https://PREENCHER-ENDERECO/img/previa-site.jpg",
       "telephone": "+5542999999999",
       "sameAs": ["https://www.instagram.com/usuario/"],
       "areaServed": [
@@ -70,7 +77,7 @@ Use o tipo mais específico do schema.org para o serviço: `HousePainter`, `Elec
 1. As perguntas do JSON-LD são idênticas às da página.
 2. Quem atende na casa do cliente não põe endereço: usa só `areaServed`. Quem recebe o
    cliente (consultório, escritório, salão) põe o `address` completo, igual ao do perfil
-   do Google.
+   do Google, e o horário em `openingHoursSpecification`.
 
 ## 3. `robots.txt`
 
@@ -105,7 +112,7 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://SEU-SITE.pages.dev/sitemap.xml
+Sitemap: https://PREENCHER-ENDERECO/sitemap.xml
 ```
 
 ## 4. `sitemap.xml`
@@ -113,7 +120,7 @@ Sitemap: https://SEU-SITE.pages.dev/sitemap.xml
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://SEU-SITE.pages.dev/</loc><lastmod>AAAA-MM-DD</lastmod></url>
+  <url><loc>https://PREENCHER-ENDERECO/</loc><lastmod>AAAA-MM-DD</lastmod></url>
 </urlset>
 ```
 
@@ -128,14 +135,15 @@ mais curto.
 ```
 /*
   Strict-Transport-Security: max-age=31536000
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 ```
 
 Com essa política, CSS e JavaScript ficam em arquivos separados (`style.css`, `app.js`),
-nunca dentro do HTML. O JSON-LD pode ficar no HTML: o navegador não executa esse bloco.
+nunca dentro do HTML, nem em atributo `style=""`. A fonte e as imagens ficam dentro de
+`site/`. O JSON-LD pode ficar no HTML: o navegador não executa esse bloco.
 
 ## 7. `404.html`
 

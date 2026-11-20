@@ -1,6 +1,6 @@
 ---
 name: site-prestador-de-servico
-description: Monta e publica, do zero, o site de uma página de um prestador de serviço (pintor, eletricista, diarista, dentista, contador, advogado, personal) para ele aparecer quando alguém da região procura no Google, no Bing e nas IAs (ChatGPT, Claude, Perplexity). Pede pouca coisa (o serviço, a cidade, o WhatsApp, o Instagram), pesquisa os sites que mais aparecem na cidade, nas vizinhas e na capital mais próxima, escreve um texto com a cara do prestador, prepara a capa e o antes e depois a partir das fotos do Instagram, deixa o site legível para as IAs e publica de graça na Cloudflare. Use quando alguém disser "quero um site", "fazer meu site", "site para o meu negócio", "site que aparece no Google", "site que a IA encontra" ou "colocar meu site no ar".
+description: Monta e publica, do zero, o site de uma página de um prestador de serviço (pintor, eletricista, diarista, dentista, contador, advogado, personal) para ele aparecer quando alguém da região procura no Google, no Bing e nas IAs (ChatGPT, Claude, Perplexity). Pede pouca coisa (o serviço, a cidade, o WhatsApp, o Instagram), pesquisa os sites que mais aparecem na região, escreve um texto com a cara do prestador, garante imagem de verdade mesmo para quem não tem foto (banco de imagens livre com licença anotada, imagem gerada ou ilustração), segue as regras de publicidade do conselho de classe (OAB, CRO, CRM, CRC), deixa o site bonito e legível para as IAs e publica de graça na Cloudflare só a pasta do site. Use quando alguém disser "quero um site", "fazer meu site", "site para o meu negócio", "site que aparece no Google", "site que a IA encontra" ou "colocar meu site no ar".
 ---
 
 # Site de prestador de serviço que a IA encontra
@@ -9,120 +9,188 @@ Quem usa esta skill quase sempre nunca fez um site. Fale simples, **uma etapa po
 e espere a pessoa dizer "feito" antes de passar para a próxima. Mensagem curta. Nada de
 termo técnico sem explicar em meia frase.
 
-O resultado é uma página só, em HTML e CSS puros, pensada primeiro para o celular, com um
-objetivo: o cliente chamar no WhatsApp.
+O resultado é uma página só, em HTML e CSS puros, pensada primeiro para o celular, com
+foto, com cara de profissional caprichoso e com um objetivo: o cliente chamar no WhatsApp.
 
-## As skills que esta skill usa
+## A pasta do projeto (sempre esta)
 
-Confira no começo quais estão instaladas. A que faltar, peça para instalar e explique em
-uma linha para que serve.
+Crie a árvore no começo, antes de qualquer outro arquivo:
 
-| Skill | Para quê | Como instalar |
-|---|---|---|
-| `grill-me` | Entrevistar o prestador e montar o briefing com perguntas de múltipla escolha | `npx skills add mattpocock/skills -g -s grill-me` |
-| `find-skills` | Achar outras skills quando aparecer uma tarefa que esta não cobre | `npx skills add vercel-labs/skills -g -s find-skills` |
-| `frontend-design` | Deixar o visual bonito e simples, longe da cara de site genérico | `npx skills add anthropics/skills -g -s frontend-design` |
-| `seo-local` | Conferir o que pesa na busca local: perfil do Google, mesmo nome, telefone e endereço em todo lugar | `npx skills add AgriciDaniel/claude-seo -g -s seo-local` |
-| `copywriting` e `copy-editing` | Estrutura de página que vende e revisão linha a linha | `npx skills add coreyhaines31/marketingskills -g -s copywriting` e o mesmo com `-s copy-editing` |
+```
+meu-site/
+├── _projeto/        anotações: briefing, pesquisa, design, imagens (licenças), RETOMADA
+├── fotos/
+│   ├── originais/   o que o prestador mandou e o que veio dos bancos, sem mexer
+│   └── geradas/     o que saiu do Google Flow ou de outra IA de imagem
+└── site/            só o que vai para a internet
+    ├── index.html, style.css, 404.html
+    ├── robots.txt, sitemap.xml, llms.txt, _headers
+    ├── img/         as imagens otimizadas
+    └── fontes/      a fonte do título e a licença dela
+```
 
-Se o comando `npx` não existir no computador, o Node.js não está instalado: guie a
-instalação pelo site oficial (nodejs.org, versão LTS), um clique por vez.
+**Só a pasta `site/` é publicada.** Briefing, telefone pessoal, pesquisa e fotos originais
+ficam fora dela e nunca vão para a internet. O `scripts/conferir_site.py` barra a
+publicação se achar anotação dentro de `site/`.
 
-## Etapa 1. O briefing (com a grill-me)
+## As skills que esta skill usa, e o plano B de cada uma
+
+Confira no começo quais estão instaladas. A que faltar, ofereça instalar e explique em uma
+linha para que serve. Se a pessoa não quiser ou a instalação falhar, siga pelo plano B:
+nenhuma delas é obrigatória.
+
+| Skill | Para quê | Como instalar | Se faltar |
+|---|---|---|---|
+| `grill-me` | Entrevistar com perguntas de múltipla escolha | `npx skills add mattpocock/skills -g -s grill-me` | Faça as perguntas da Etapa 1 você mesmo, uma por vez, com opções |
+| `frontend-design` | Visual com cara própria | `npx skills add anthropics/skills -g -s frontend-design` | [references/design.md](references/design.md) resolve sozinho |
+| `copywriting` e `copy-editing` | Estrutura que vende e revisão linha a linha | `npx skills add coreyhaines31/marketingskills -g -s copywriting` e o mesmo com `-s copy-editing` | [references/copy.md](references/copy.md) traz o essencial das duas |
+| `seo-local` | O que pesa na busca local | `npx skills add AgriciDaniel/claude-seo -g -s seo-local` | A Etapa 8 e [references/indexacao.md](references/indexacao.md) cobrem o básico |
+| `find-skills` | Achar skill para tarefa que esta não cobre | `npx skills add vercel-labs/skills -g -s find-skills` | Diga o que falta e siga sem |
+
+Se a busca na web não funcionar (sem ferramenta, sem internet ou bloqueada), siga o plano B
+de [references/pesquisa-regional.md](references/pesquisa-regional.md) e o de
+[references/imagens.md](references/imagens.md). O site sai do mesmo jeito.
+
+Se o comando `npx` não existir, o Node.js não está instalado: guie a instalação pelo site
+oficial (nodejs.org, versão LTS), um clique por vez.
+
+## Etapa 1. O briefing
 
 Peça só o que ninguém além do prestador sabe, em perguntas de múltipla escolha, uma
 decisão por pergunta, com a resposta recomendada primeiro:
 
 1. O serviço principal e até seis serviços que ele faz.
-2. A cidade e os bairros ou cidades vizinhas que atende. Pergunte se ele atende na casa do
-   cliente ou se o cliente vai até ele (isso decide se o endereço aparece).
+2. A cidade e os bairros ou cidades vizinhas que atende. Ele vai até o cliente ou o
+   cliente vai até ele? (isso decide se o endereço aparece)
 3. O WhatsApp com DDD e o @ do Instagram.
-4. Por que um cliente escolhe ele: prazo, garantia, limpeza, preço, tempo de profissão.
-   Número só entra se ele confirmar (anos de profissão, obras entregues, nota no Google).
-5. Logo, se tiver. Se não tiver, o nome escrito com uma fonte boa resolve.
+4. Por que um cliente escolhe ele: prazo, horário, garantia, limpeza, explicação, tempo de
+   profissão. Número só entra se ele confirmar (anos, obras, nota no Google).
+5. **Tem registro em conselho de classe (OAB, CRO, CRM, CRC, outro)? Qual o número?** Se
+   tiver, leia [references/profissoes-com-conselho.md](references/profissoes-com-conselho.md)
+   agora: ela muda o texto, as imagens e o rodapé.
+6. Tem fotos do trabalho, do lugar ou dele? (se não tiver, tudo bem: a Etapa 3 resolve)
+7. Logo, se tiver. Se não, o nome escrito na fonte do título resolve.
 
-O resto você descobre sozinho: o que os concorrentes fazem, o que a região procura, as
-palavras que os clientes usam. Não pergunte o que dá para pesquisar.
+O resto você descobre sozinho. Não pergunte o que dá para pesquisar.
 
-Grave o briefing em `briefing.md` na pasta do projeto.
+Grave em `_projeto/briefing.md`.
 
 ## Etapa 2. A pesquisa regional
 
-Siga [references/pesquisa-regional.md](references/pesquisa-regional.md). Em resumo: os 3
-sites que mais aparecem na cidade do prestador, nas cidades vizinhas e na capital ou
-metrópole mais próxima, no Google, no Bing e nas IAs. Disso saem o nível da briga local, o
-que todo mundo da região já faz (e o site precisa ter) e uma referência de alto nível para
-copiar a estrutura, nunca o texto.
+Siga [references/pesquisa-regional.md](references/pesquisa-regional.md): os 3 sites que
+mais aparecem na cidade, nas vizinhas e na capital mais próxima. Mostre ao prestador um
+resumo de cinco linhas e grave em `_projeto/pesquisa.md`.
 
-Mostre ao prestador um resumo de cinco linhas e a tabela, e grave em `pesquisa.md`.
+## Etapa 3. As imagens (o site nunca sai sem foto)
 
-## Etapa 3. As imagens
+Siga [references/imagens.md](references/imagens.md). Pelo menos três imagens: a capa, o
+lugar ou o trabalho, um detalhe. Quatro caminhos, que se misturam:
 
-Siga [references/imagens.md](references/imagens.md): baixar as melhores fotos do Instagram,
-escrever o prompt pronto da capa e de cada antes e depois para o Google Flow, e otimizar o
-que voltar. Se o prestador não quiser mexer com imagem agora, o site sai com as fotos como
-estão, recortadas e leves.
+1. As fotos do prestador.
+2. Banco de imagens livre (Openverse, Wikimedia Commons, Unsplash, Pexels), com a licença
+   de cada foto anotada.
+3. Imagem gerada por IA, marcada como ilustrativa.
+4. Ilustração em SVG feita por você, que sempre dá.
+
+Toda imagem tem uma linha em `_projeto/imagens.md` com autor, licença e link. CC BY vira
+crédito no rodapé. Mostre as escolhidas ao prestador antes de montar a página.
 
 ## Etapa 4. O texto
 
-Siga [references/copy.md](references/copy.md). A ordem é: escrever com a `copywriting`,
-revisar com a `copy-editing` e passar o detector de cara de IA
-(`python3 scripts/revisar_textos.py site/index.html`). Os termos da região que a pesquisa
-achou entram no título, no primeiro parágrafo e nas perguntas frequentes.
+Siga [references/copy.md](references/copy.md): escrever, revisar e passar o detector de
+cara de IA:
+
+```bash
+python3 scripts/revisar_textos.py site/index.html
+```
+
+O detector diz quantos arquivos leu. "Nenhum arquivo para revisar" é caminho errado, e não
+texto limpo.
+
+Dado que só o prestador sabe e ainda não mandou, marque `[PREENCHER: o que falta]` no
+texto e pergunte. Nunca invente número, prêmio ou depoimento.
 
 ## Etapa 5. O site
 
-Use a `frontend-design`. Estrutura, nesta ordem:
+Siga [references/design.md](references/design.md) (com a `frontend-design`, se ela
+estiver instalada). Primeiro o plano em cinco linhas em `_projeto/design.md`, depois o
+código.
 
-1. Capa: nome, o que faz e onde, em uma frase, e o botão do WhatsApp.
-2. Serviços (até seis, um parágrafo curto cada).
-3. Antes e depois.
-4. Como funciona, em três ou quatro passos (chamar, visita ou orçamento, serviço, entrega).
-5. Onde atende.
+Estrutura, nesta ordem:
+
+1. Capa: foto, título com o serviço e a cidade, uma frase e o botão do WhatsApp.
+2. Serviços (até seis, uma linha curta cada).
+3. Antes e depois, para quem pode. Profissão com conselho troca por "o lugar" e "quem
+   atende" ([profissoes-com-conselho.md](references/profissoes-com-conselho.md)).
+4. Como funciona, em três ou quatro passos.
+5. Onde atende e horário.
 6. Perguntas frequentes (de quatro a seis, com as dúvidas reais da região).
 7. Contato: WhatsApp e Instagram.
+8. Rodapé: nome, registro no conselho (quando houver) e créditos das imagens.
 
 Regras:
-1. HTML e CSS puros. JavaScript só se o antes e depois precisar, em arquivo separado.
+1. HTML e CSS puros. JavaScript só se precisar, em arquivo separado. Nada de `<style>`,
+   `<script>` ou `style=""` dentro do HTML (a política de segurança bloqueia).
 2. Todo texto no HTML, nunca dentro de imagem.
 3. Um único `h1`, um `h2` por seção.
-4. Fonte do sistema. Nada carregado de fora do site: fontes, bibliotecas e analytics ficam de fora.
+4. Nada carregado de fora: fonte, imagem, biblioteca e analytics ficam dentro de `site/`.
 5. Desenhado primeiro para a tela de 390 px. Botão do WhatsApp sempre à mão no celular.
-6. Imagens em WebP ou JPG otimizado, com `width`, `height`, `alt` descritivo e
+6. Imagens em WebP ou JPG, abaixo de 300 KB, com `width`, `height`, `alt` e
    `loading="lazy"` (menos a da capa).
 7. Link do WhatsApp com mensagem pronta:
    `https://wa.me/55DDDNUMERO?text=Olá, vim pelo site e quero um orçamento.` (codificado).
+8. Onde vai o endereço do site, que só existe depois de publicar, escreva
+   `https://PREENCHER-ENDERECO/`. A Etapa 7 troca de uma vez.
 
-Depois, os arquivos que deixam o site legível para o Google e as IAs, de
+Depois, os arquivos para o Google e as IAs, de
 [references/indexacao.md](references/indexacao.md): JSON-LD, `robots.txt`, `sitemap.xml`,
 `llms.txt`, `_headers` e `404.html`.
 
-Abra o `index.html` no navegador e mostre ao prestador, no celular e no computador, antes de
-publicar.
+Sirva a pasta para ver no navegador:
+
+```bash
+python3 -m http.server 8000 --directory site
+```
+
+Abra `http://localhost:8000`, confira em 390 px e em 1280 px (item 7 do design.md) e
+mostre ao prestador, no celular e no computador, antes de publicar.
 
 ## Etapa 6. A revisão final
 
-Antes de publicar, confira e mostre a lista com o resultado de cada item:
+Rode os dois scripts e mostre o resultado:
 
-1. Nenhum `noindex` em lugar nenhum.
-2. O texto está no HTML (abra o código e procure uma frase do site).
-3. O JSON-LD é válido e as perguntas dele são as mesmas da página.
-4. Todas as imagens abrem e nenhuma passa de 300 KB.
-5. O link do WhatsApp abre a conversa certa.
-6. O detector de cara de IA não acha nada de peso 3.
-7. Nome, telefone e região iguais no site, no `llms.txt`, no JSON-LD e no Instagram.
+```bash
+python3 scripts/conferir_site.py site
+python3 scripts/revisar_textos.py site/index.html
+```
+
+O `conferir_site.py` barra: `[PREENCHER: ...]` sobrando, anotação dentro de `site/`,
+`noindex`, recurso carregado de fora, imagem sem `alt`, `width` ou `height`, imagem acima
+de 300 KB, mais de um `h1`, JSON-LD quebrado e perguntas do JSON-LD diferentes das da
+página. Ele só avisa do `PREENCHER-ENDERECO`, que é esperado antes da primeira publicação.
+
+Confira com os olhos o que o script não vê:
+1. O link do WhatsApp abre a conversa certa.
+2. Nenhum achado de peso 3 no detector.
+3. Nome, telefone e região iguais no site, no `llms.txt`, no JSON-LD e no Instagram.
+4. Profissão com conselho: a lista de [profissoes-com-conselho.md](references/profissoes-com-conselho.md),
+   item por item.
+5. Toda imagem está em `_projeto/imagens.md`, e as CC BY têm crédito no rodapé.
 
 Se a IA disser que está pronto, confira assim mesmo. "Pronto" sem conferência não vale.
 
 ## Etapa 7. Publicar
 
-Siga [references/publicar.md](references/publicar.md): o Claude Code publica a pasta na
-Cloudflare Pages, de graça, e o prestador só cria a conta e clica em autorizar. Se travar,
-o plano B é arrastar a pasta no painel da Cloudflare. O domínio próprio (.com.br) é
-opcional e vem por último.
+Siga [references/publicar.md](references/publicar.md): o Claude Code publica **só a pasta
+`site/`** na Cloudflare Pages, de graça; o prestador cria a conta e clica em autorizar.
+Plano B: arrastar a pasta `site/` no painel da Cloudflare. Domínio próprio é opcional e vem
+por último.
 
-Depois de publicar, troque o endereço provisório pelo definitivo nos arquivos, publique de
-novo e abra o site no celular.
+Depois da primeira publicação, troque o endereço e publique de novo:
+
+```bash
+python3 scripts/conferir_site.py site --endereco https://nome-do-negocio.pages.dev
+```
 
 ## Etapa 8. Para aparecer de verdade
 
@@ -133,14 +201,18 @@ O site no ar é metade. Entregue esta lista, em ordem, e ofereça guiar cada uma
 2. Bing Places (bingplaces.com). O Bing alimenta parte das buscas do ChatGPT e do Copilot.
 3. Apple Business Connect, para o Apple Maps.
 4. Link do site na bio do Instagram e no perfil do WhatsApp Business.
-5. Pedir avaliação no Google para os últimos clientes.
+5. Pedir avaliação no Google para os últimos clientes (profissão com conselho: confira se
+   o código de ética permite pedir).
 
-Mesmo nome, mesmo telefone e mesma região em todos os cadastros.
+Mesmo nome, mesmo telefone e mesma região em todos os cadastros. O link do perfil do
+Google só existe depois do cadastro: anote em `_projeto/RETOMADA.md` para entrar no site
+na próxima atualização.
 
 ## Para retomar outro dia
 
-Antes de encerrar, grave `RETOMADA.md` na pasta do projeto: o endereço do site, o que foi
-feito, o que falta e o comando para publicar de novo.
+Antes de encerrar, grave `_projeto/RETOMADA.md`: o endereço do site, o que foi feito, o
+que falta (inclusive cada `[PREENCHER]` e cada cadastro da Etapa 8) e o comando para
+publicar de novo.
 
 ## Quem fez esta skill
 
