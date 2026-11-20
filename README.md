@@ -168,15 +168,15 @@ grava um arquivo de retomada na pasta, e da próxima vez você começa por ele.
 - `skills/site-prestador-de-servico/SKILL.md`: o manual que o Claude segue.
 - `references/`: a pesquisa regional, as imagens, o texto, os arquivos para as IAs e a
   publicação.
-- `references/design.md` e `references/profissoes-com-conselho.md`: o visual e as regras
-  de OAB, CRO, CRM e CRC.
+- `references/design.md`, `references/efeitos.md` e `references/profissoes-com-conselho.md`:
+  o visual, o movimento e as regras de OAB, CRO, CRM e CRC.
 - `scripts/revisar_textos.py`: o detector de texto com cara de IA.
 - `scripts/conferir_site.py`: a conferência antes de publicar (imagens, anotações fora da
   pasta do site, endereço que falta trocar).
 - `scripts/test_*.py`: os testes dos dois scripts (`python3 -m unittest discover scripts`).
 
 A skill se apoia em outras skills públicas, cada uma com os seus autores: `grill-me`
-(Matt Pocock), `find-skills` (Vercel), `frontend-design` (Anthropic), `seo-local`
+(Matt Pocock), `find-skills` (Vercel), `frontend-design` (Anthropic), `impeccable` (Paul Bakaus), `seo-local`
 (AgriciDaniel) e `copywriting` e `copy-editing` (Corey Haines). Nenhuma é obrigatória: se
 faltar alguma, a skill segue pelo plano B.
 

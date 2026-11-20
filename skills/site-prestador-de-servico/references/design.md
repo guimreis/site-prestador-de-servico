@@ -99,8 +99,10 @@ Sem internet ou sem Node, o plano B é a fonte do sistema com tamanhos bem marca
 
 ## 5. Movimento
 
-No máximo um: a capa entrando quando a página abre, ou nada. Animação em cada seção que
-aparece na rolagem é o primeiro sinal de site feito por IA.
+No máximo três efeitos, cada um com uma função: a entrada da capa, um efeito assinatura
+ligado à rolagem e a chegada suave das fotos. Receitas, ferramentas e como conferir em
+[efeitos.md](efeitos.md). Animação em cada seção que aparece na rolagem é o primeiro sinal
+de site feito por IA.
 
 ## 6. Os clichês que denunciam site genérico
 

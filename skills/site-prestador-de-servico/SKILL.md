@@ -43,6 +43,7 @@ nenhuma delas é obrigatória.
 |---|---|---|---|
 | `grill-me` | Entrevistar com perguntas de múltipla escolha | `npx skills add mattpocock/skills -g -s grill-me` | Faça as perguntas da Etapa 1 você mesmo, uma por vez, com opções |
 | `frontend-design` | Visual com cara própria | `npx skills add anthropics/skills -g -s frontend-design` | [references/design.md](references/design.md) resolve sozinho |
+| `impeccable` (opcional) | Criticar e polir o visual e os efeitos (`/impeccable critique`, `polish`, `animate`) | `npx skills add pbakaus/impeccable` | [references/design.md](references/design.md) e [references/efeitos.md](references/efeitos.md) bastam |
 | `copywriting` e `copy-editing` | Estrutura que vende e revisão linha a linha | `npx skills add coreyhaines31/marketingskills -g -s copywriting` e o mesmo com `-s copy-editing` | [references/copy.md](references/copy.md) traz o essencial das duas |
 | `seo-local` | O que pesa na busca local | `npx skills add AgriciDaniel/claude-seo -g -s seo-local` | A Etapa 8 e [references/indexacao.md](references/indexacao.md) cobrem o básico |
 | `find-skills` | Achar skill para tarefa que esta não cobre | `npx skills add vercel-labs/skills -g -s find-skills` | Diga o que falta e siga sem |
@@ -114,7 +115,9 @@ texto e pergunte. Nunca invente número, prêmio ou depoimento.
 
 Siga [references/design.md](references/design.md) (com a `frontend-design`, se ela
 estiver instalada). Primeiro o plano em cinco linhas em `_projeto/design.md`, depois o
-código.
+código. Para o movimento, siga [references/efeitos.md](references/efeitos.md): no máximo
+três efeitos (a entrada da capa, um efeito assinatura do ofício e a chegada suave das
+fotos), com CSS puro e a Motion dentro de `site/js/`.
 
 Estrutura, nesta ordem:
 
@@ -129,7 +132,7 @@ Estrutura, nesta ordem:
 8. Rodapé: nome, registro no conselho (quando houver) e créditos das imagens.
 
 Regras:
-1. HTML e CSS puros. JavaScript só se precisar, em arquivo separado. Nada de `<style>`,
+1. HTML e CSS puros. JavaScript só para os efeitos, em `site/js/`. Nada de `<style>`,
    `<script>` ou `style=""` dentro do HTML (a política de segurança bloqueia).
 2. Todo texto no HTML, nunca dentro de imagem.
 3. Um único `h1`, um `h2` por seção.
