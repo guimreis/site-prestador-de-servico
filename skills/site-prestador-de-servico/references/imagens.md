@@ -126,6 +126,15 @@ inteira vira enfeite.
 4. Gere `previa-site.jpg` em 1200 x 630 para a prévia do link no WhatsApp.
 5. No HTML, toda imagem tem `alt` descritivo, `width` e `height`. A capa carrega na hora;
    as outras, com `loading="lazy"`.
+6. **A capa em dois tamanhos**: 800 px de largura (até 80 KB, a do celular) e 1600 px, ou
+   a maior que a foto tiver (até 200 KB, a do computador), com `srcset` e `sizes="100vw"`
+   (a capa é de ponta a ponta, [design.md](design.md) item 2). O celular de teste do
+   Lighthouse tem tela de 412 px com densidade 1,75: ele pede 721 px e fica com a de 800.
+   Uma versão de 720 px perde por 1 px, e o celular baixa a grande.
+7. **Foto nunca vai como fundo no CSS** (`background: url(...)`). Fundo de CSS não espera a
+   rolagem: baixa junto com a capa e atrasa a primeira tela. Para uma faixa com foto atrás
+   do texto, use um `<img loading="lazy">` dentro da seção, com `position: absolute` e
+   `object-fit: cover`, e o texto por cima.
 
 ## O arquivo `_projeto/imagens.md`
 

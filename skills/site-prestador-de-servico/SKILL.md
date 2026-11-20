@@ -12,6 +12,24 @@ termo técnico sem explicar em meia frase.
 O resultado é uma página só, em HTML e CSS puros, pensada primeiro para o celular, com
 foto, com cara de profissional caprichoso e com um objetivo: o cliente chamar no WhatsApp.
 
+## Quando o pedido já vem completo (prompt único)
+
+Se a mensagem já traz o que a Etapa 1 pergunta (ou o endereço do site atual do prestador,
+de onde sai todo o conteúdo) e pede para não perguntar, não entreviste. Faça as etapas em
+sequência, sem parar para pedir "feito":
+1. Grave em `_projeto/briefing.md` o que veio na mensagem, o que veio do site atual e cada
+   suposição sua, marcada como suposição.
+2. Conteúdo de site existente segue a regra de [references/copy.md](references/copy.md):
+   nada além do que está lá.
+3. Não publique nem crie conta: termine na Etapa 6, com o site servido no computador, os
+   prints e as notas, e diga o que falta para publicar.
+4. Onde a skill manda "mostre ao prestador" ou "pergunte", não pare: anote o ponto em
+   `_projeto/RETOMADA.md`, na lista "Para mostrar ao prestador", e siga com a escolha
+   recomendada.
+5. A pesquisa regional (Etapa 2) vale também aqui, se a busca na web funcionar.
+6. A conferência com os olhos é sua: rode o `olhar_site.mjs`, abra os prints e corrija o
+   que estiver feio antes de entregar.
+
 ## A pasta do projeto (sempre esta)
 
 Crie a árvore no começo, antes de qualquer outro arquivo:
@@ -116,16 +134,28 @@ texto e pergunte. Nunca invente número, prêmio ou depoimento.
 Siga [references/design.md](references/design.md) (com a `frontend-design`, se ela
 estiver instalada). Primeiro o plano em cinco linhas em `_projeto/design.md`, depois o
 código. Para o movimento, siga [references/efeitos.md](references/efeitos.md): no máximo
-três efeitos (a entrada da capa, um efeito assinatura do ofício e a chegada suave das
-fotos), com CSS puro e a Motion dentro de `site/js/`.
+três efeitos (a entrada da capa, um efeito assinatura do ofício e as fotos vivas, com
+parallax leve em CSS puro), com CSS puro e a Motion dentro de `site/js/`. A capa pode abrir com um vídeo em
+loop de uma cena 3D escrita em código e filmada pelo `scripts/filmar_cena.mjs` (Three.js e
+ffmpeg, uns 150 KB, sem nada de fora no site): receita em
+[references/efeitos.md](references/efeitos.md), "O vídeo da capa".
 
 Estrutura, nesta ordem:
 
-1. Capa: foto, título com o serviço e a cidade, uma frase e o botão do WhatsApp.
+1. Capa: foto ou vídeo de ponta a ponta, título com o serviço e a cidade, uma frase e o
+   botão do WhatsApp.
+   **Padrão: a capa abre com o vídeo da cena 3D** ([efeitos.md](references/efeitos.md),
+   "O vídeo da capa"), com a foto mais forte do lugar na seção seguinte. Fica sem vídeo
+   quando o prestador pedir, quando ele tiver um vídeo próprio bom ou quando faltar o
+   Chrome ou o ffmpeg: aí a capa é a foto.
 2. Serviços (até seis, uma linha curta cada).
 3. Antes e depois, para quem pode. Profissão com conselho troca por "o lugar" e "quem
-   atende" ([profissoes-com-conselho.md](references/profissoes-com-conselho.md)).
+   atende" ([profissoes-com-conselho.md](references/profissoes-com-conselho.md)). Ofício
+   sem antes e depois (transporte, aulas, eventos) mostra o que o cliente encontra: o
+   carro, a sala, o equipamento, a equipe.
 4. Como funciona, em três ou quatro passos.
+   Depoimentos, quando o prestador já tem (do site atual ou do Google, com o texto dele),
+   entram aqui, depois do como funciona. Nunca inventados.
 5. Onde atende e horário.
 6. Perguntas frequentes (de quatro a seis, com as dúvidas reais da região).
 7. Contato: WhatsApp e Instagram.
@@ -149,14 +179,21 @@ Depois, os arquivos para o Google e as IAs, de
 [references/indexacao.md](references/indexacao.md): JSON-LD, `robots.txt`, `sitemap.xml`,
 `llms.txt`, `_headers` e `404.html`.
 
-Sirva a pasta para ver no navegador:
+9. CSS e JavaScript chamados com número de versão (`style.css?v=1`, `js/app.js?v=1`), e o
+   número sobe a cada mudança: o navegador guarda a versão velha
+   ([design.md](references/design.md), item 9).
+10. No celular, botões grandes na largura da coluna, empilhados e do mesmo tamanho; o do
+    topo, menor ([design.md](references/design.md), item 7).
+
+Sirva a pasta e olhe o site em cinco larguras, com prints e o Lighthouse:
 
 ```bash
 python3 -m http.server 8000 --directory site
+node scripts/olhar_site.mjs http://localhost:8000 _projeto/prints --lighthouse
 ```
 
-Abra `http://localhost:8000`, confira em 390 px e em 1280 px (item 7 do design.md) e
-mostre ao prestador, no celular e no computador, antes de publicar.
+Corrija cada defeito que ele acusar, abra os prints de 390 e 1280 px (item 10 do
+design.md) e só então mostre ao prestador, no celular e no computador.
 
 ## Etapa 6. A revisão final
 
@@ -165,20 +202,28 @@ Rode os dois scripts e mostre o resultado:
 ```bash
 python3 scripts/conferir_site.py site
 python3 scripts/revisar_textos.py site/index.html
+node scripts/olhar_site.mjs http://localhost:8000 _projeto/prints --lighthouse
 ```
 
 O `conferir_site.py` barra: `[PREENCHER: ...]` sobrando, anotação dentro de `site/`,
 `noindex`, recurso carregado de fora, imagem sem `alt`, `width` ou `height`, imagem acima
 de 300 KB, mais de um `h1`, JSON-LD quebrado e perguntas do JSON-LD diferentes das da
-página. Ele só avisa do `PREENCHER-ENDERECO`, que é esperado antes da primeira publicação.
+página, foto como fundo no CSS e fonte acima de 60 KB. Ele só avisa do `PREENCHER-ENDERECO`, que é esperado antes da primeira publicação.
 
-Confira com os olhos o que o script não vê:
+O `olhar_site.mjs` barra o que só aparece na tela: rolagem para o lado de 360 a 1440 px,
+botões desproporcionais no celular, vazio no computador (meia tela sem conteúdo ao lado
+de um bloco, ou item sozinho numa linha de grade), toque pequeno, WhatsApp fora da primeira tela, texto
+invisível e nota do Lighthouse abaixo de 95.
+
+Confira com os olhos o que os scripts não veem:
 1. O link do WhatsApp abre a conversa certa.
 2. Nenhum achado de peso 3 no detector.
 3. Nome, telefone e região iguais no site, no `llms.txt`, no JSON-LD e no Instagram.
 4. Profissão com conselho: a lista de [profissoes-com-conselho.md](references/profissoes-com-conselho.md),
    item por item.
 5. Toda imagem está em `_projeto/imagens.md`, e as CC BY têm crédito no rodapé.
+6. Site refeito: cada fato do site novo tem a sua linha em `_projeto/de-onde-veio.md`.
+7. Os prints de 390 e 1280 px: bonito no celular, não só correto.
 
 Se a IA disser que está pronto, confira assim mesmo. "Pronto" sem conferência não vale.
 

@@ -11,7 +11,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(AQUI, "conferir_site.py")
 
 HTML_BOM = """<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
-<title>Clínica</title><link rel="canonical" href="https://PREENCHER-ENDERECO/">
+<title>Clínica</title><link rel="icon" href="img/a.jpg"><link rel="canonical" href="https://PREENCHER-ENDERECO/">
 <link rel="stylesheet" href="style.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Dói?",
@@ -83,6 +83,51 @@ class Conferir(unittest.TestCase):
     def test_faq_diferente_do_jsonld_bloqueia(self):
         r = roda(projeto(HTML_BOM.replace("<summary>Dói?</summary>", "<summary>Dói muito?</summary>")))
         self.assertEqual(r.returncode, 1)
+
+    def test_foto_como_fundo_no_css_bloqueia(self):
+        r = roda(projeto(extras={"style.css": b'.contato { background: #000 url("img/a.jpg") center / cover; }'}))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("fundo", r.stdout)
+
+    def test_svg_como_fundo_no_css_passa(self):
+        r = roda(projeto(extras={"style.css": b'.x { background: url("img/onda.svg"); }', "img/onda.svg": b"<svg/>"}))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_fonte_pesada_bloqueia(self):
+        r = roda(projeto(extras={"fontes/titulo.woff2": b"0" * 70_000}))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("titulo.woff2", r.stdout)
+
+    def test_css_sem_numero_de_versao_avisa(self):
+        r = roda(projeto())
+        self.assertIn("?v=", r.stdout)
+        r = roda(projeto(HTML_BOM.replace('href="style.css"', 'href="style.css?v=3"')))
+        self.assertNotIn("?v=", r.stdout)
+
+    def test_video_leve_e_mudo_passa(self):
+        html = HTML_BOM.replace("<h1>", '<video class="capa-video" muted playsinline loop preload="none" '
+                                'data-celular="video/c.mp4"></video><h1>')
+        r = roda(projeto(html, extras={"video/c.mp4": b"0" * 200_000}))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_video_pesado_bloqueia(self):
+        r = roda(projeto(extras={"video/c.mp4": b"0" * 2_000_000}))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("c.mp4", r.stdout)
+
+    def test_video_com_som_ou_sem_playsinline_bloqueia(self):
+        r = roda(projeto(HTML_BOM.replace("<h1>", '<video loop preload="none"></video><h1>')))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("muted", r.stdout)
+
+    def test_404_com_caminho_desde_a_raiz_passa(self):
+        r = roda(projeto(extras={"404.html": b'<!doctype html><html><body><img src="/img/a.jpg" alt="" width="1" height="1"></body></html>'}))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_sem_icone_da_aba_bloqueia(self):
+        r = roda(projeto(HTML_BOM.replace('<link rel="icon" href="img/a.jpg">', "")))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("icon", r.stdout)
 
     def test_trocar_endereco(self):
         site = projeto()

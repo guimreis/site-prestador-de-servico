@@ -60,6 +60,32 @@ python3 scripts/revisar_textos.py site/index.html
 4. Nas perguntas frequentes, pergunta seguida de resposta é o formato certo, e o detector
    já ignora esse bloco.
 
+## Quando o prestador já tem site: nada além do que está lá
+
+Refazer um site existente é reorganizar e reescrever o que **já está escrito nele**, não
+interpretar. Na demo da TXP saíram frases que o site original não dizia: "eventos e
+projetos sociais" (o original dizia "mobilidade corporativa e social"), "aeroporto" (não
+aparecia em lugar nenhum) e um serviço com o nome trocado. Parecia melhor, e era invenção.
+
+1. Salve o texto do site atual em `_projeto/original.html` (ou `original.txt`) antes de
+   escrever.
+2. Monte `_projeto/de-onde-veio.md`, uma linha por fato do site novo: a frase nova e o
+   trecho do original que a sustenta, entre aspas.
+
+   | No site novo | No original |
+   |---|---|
+   | Carros com blindagem nível IIIA | "Carros com blindagem Nível IIIA." |
+
+3. Fato sem trecho no original sai do site, ou vira `[PREENCHER: confirmar ...]` e pergunta.
+   Vale para lugar (aeroporto, cidade vizinha), público, serviço, número e prazo.
+4. O nome de cada serviço fica como o prestador chama. Pode explicar melhor na linha de
+   baixo; o nome não muda.
+5. Depoimento: só os que estão no site, com o texto deles. Pode cortar um trecho, sem trocar
+   palavra, e abreviar o sobrenome. Estrelas e "Nota 10!!!" ficam de fora.
+6. Fiel ao fato, não à palavra. Se o original diz "100% legalizados" e o detector acusa o
+   número sem fonte, escreva o mesmo fato sem o número ("todos os táxis são legalizados").
+   Fato nenhum se perde e nenhum se acrescenta.
+
 ## Palavras da região
 
 As palavras que a pesquisa regional achou entram em três lugares: o título, o primeiro

@@ -1,0 +1,190 @@
+<!doctype html>
+<!--
+  Cena 3D modelo para o vídeo da capa. Não vai para o site: fica em _projeto/cena/ e é
+  filmada quadro a quadro por scripts/filmar_cena.mjs.
+
+  O contrato:
+  1. window.desenha(t) desenha o quadro do segundo t, sempre igual para o mesmo t.
+     Nada de Math.random() sem semente, Date.now(), relógio ou requestAnimationFrame.
+  2. Tudo se repete a cada DURACAO segundos: o último quadro emenda no primeiro (loop).
+  3. window.cenaPronta é uma Promise que resolve quando tudo carregou.
+
+  O modelo é uma estrada de luz à noite: faixas douradas correndo e rastros de farol.
+  Troque o objeto pelo do ofício, mantendo o contrato: o fio que acende (eletricista),
+  o rolo que pinta a faixa (pintor), a linha do tempo (advogado), a ponte da cidade.
+  As cores vêm do plano de design (_projeto/design.md).
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cena da capa</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #121418; overflow: hidden; }
+  canvas { display: block; }
+</style>
+<script type="importmap">{ "imports": { "three": "./three.module.js" } }</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from "three";
+
+// ---- As cores e o tempo (troque pelas do plano de design) ----
+const COR = { ceuTopo: "#07080b", ceuHorizonte: "#1c1812", chao: 0x0b0c0f, pista: 0x1b1e24, destaque: 0xd9a72b,
+              farol: 0xfff1cf, lanterna: 0xff4a2e, cidade: [0xffd27a, 0xfff4dc, 0x9fc3ff, 0xd9a72b] };
+const DURACAO = 6; // segundos do loop
+
+// Semente fixa: o mesmo quadro sai igual em toda filmagem.
+function acaso(i) { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+
+const largura = innerWidth, altura = innerHeight, retrato = altura > largura;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1);
+renderer.setSize(largura, altura);
+document.body.appendChild(renderer.domElement);
+
+const cena = new THREE.Scene();
+// Céu: degradê do quase preto para um âmbar fraco no horizonte (a cidade acesa ao longe)
+{
+  const c = document.createElement("canvas"); c.width = 2; c.height = 256;
+  const g = c.getContext("2d"), d = g.createLinearGradient(0, 0, 0, 256);
+  d.addColorStop(0, COR.ceuTopo); d.addColorStop(0.3, COR.ceuTopo); d.addColorStop(0.48, COR.ceuHorizonte); d.addColorStop(1, COR.ceuHorizonte);
+  g.fillStyle = d; g.fillRect(0, 0, 2, 256);
+  cena.background = new THREE.CanvasTexture(c);
+  cena.background.colorSpace = THREE.SRGBColorSpace; // sem isso o céu sai cinza e lavado
+}
+cena.fog = new THREE.Fog(new THREE.Color(COR.ceuHorizonte), 20, 105); // a névoa tem a cor do horizonte: a estrada some nele
+
+const camera = new THREE.PerspectiveCamera(retrato ? 60 : 36, largura / altura, 0.1, 300);
+
+// O brilho: um ponto redondo e macio, somado à cena (cor escura = mais transparente)
+const brilho = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = 64;
+  const g = c.getContext("2d"), d = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  d.addColorStop(0, "rgba(255,255,255,1)"); d.addColorStop(0.25, "rgba(255,255,255,.55)"); d.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = d; g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+})();
+function pontos(n, tamanho, comNevoa = true) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(n * 3), 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(n * 3), 3));
+  const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: tamanho, map: brilho, vertexColors: true,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: comNevoa }));
+  cena.add(p);
+  return p;
+}
+
+// O caminho: uma curva suave que some na névoa
+const caminho = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(0, 0, 14), new THREE.Vector3(0.8, 0, 0), new THREE.Vector3(-2.4, 0, -16),
+  new THREE.Vector3(2.2, 0, -34), new THREE.Vector3(-1.5, 0, -54), new THREE.Vector3(1, 0, -80), new THREE.Vector3(0, 0, -110),
+]);
+const COMPRIMENTO = caminho.getLength();
+const em = (u) => ((u % 1) + 1) % 1;
+function noCaminho(u, ladoMetros, y, alvo) {
+  const p = caminho.getPointAt(em(u)), tg = caminho.getTangentAt(em(u));
+  return alvo.set(p.x - tg.z * ladoMetros, y, p.z + tg.x * ladoMetros);
+}
+
+// O chão escuro e a pista, com as bordas claras (uma faixa contínua, sem frestas)
+{
+  const chao = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshBasicMaterial({ color: COR.chao }));
+  chao.rotation.x = -Math.PI / 2; chao.position.y = -0.02; cena.add(chao);
+  const n = 600, pos = [], indice = [];
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, p = caminho.getPointAt(u), tg = caminho.getTangentAt(u);
+    pos.push(p.x - tg.z * 3, 0, p.z + tg.x * 3, p.x + tg.z * 3, 0, p.z - tg.x * 3);
+    if (i < n) indice.push(2 * i, 2 * i + 1, 2 * i + 2, 2 * i + 1, 2 * i + 3, 2 * i + 2);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(indice);
+  cena.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: COR.pista, side: THREE.DoubleSide })));
+  const borda = pontos(2 * 260, 0.18), v = new THREE.Vector3();
+  const pb = borda.geometry.attributes.position, cb = borda.geometry.attributes.color;
+  for (let i = 0; i < 260; i++) for (const [k, lado] of [[0, -2.9], [1, 2.9]]) {
+    noCaminho(i / 260, lado, 0.02, v); pb.setXYZ(i * 2 + k, v.x, v.y, v.z); cb.setXYZ(i * 2 + k, 0.35, 0.35, 0.38);
+  }
+}
+
+// As faixas douradas do meio: cada traço é uma fila de pontos, e todos andam um ESPACO por loop
+const ESPACO = 3, POR_TRACO = 14, nTracos = Math.floor(COMPRIMENTO / ESPACO);
+const faixas = pontos(nTracos * POR_TRACO, 0.2);
+const ouro = new THREE.Color(COR.destaque);
+
+// Os rastros: farol branco indo, lanterna vermelha voltando; cada rastro é uma cauda que se apaga
+const RASTROS = [
+  ...Array.from({ length: 12 }, (_, i) => ({ lado: -1.4, sentido: -1, cor: new THREE.Color(COR.farol), fase: (i + acaso(i) * 0.6) / 12 })),
+  ...Array.from({ length: 10 }, (_, i) => ({ lado: 1.4, sentido: 1, cor: new THREE.Color(COR.lanterna), fase: (i + acaso(i + 50) * 0.6) / 10 })),
+];
+const CAUDA = 70, PASSO_CAUDA = 0.17 / COMPRIMENTO;
+const rastros = pontos(RASTROS.length * CAUDA, 0.38);
+
+// As luzes da cidade ao fundo, paradas, piscando de leve no ritmo do loop
+const nCidade = 900, cidade = pontos(nCidade, 1.3, false);
+{
+  const p = cidade.geometry.attributes.position, c = cidade.geometry.attributes.color;
+  for (let i = 0; i < nCidade; i++) {
+    const lado = acaso(i * 3) < 0.5 ? -1 : 1;
+    const x = lado * (10 + acaso(i * 3 + 1) * 90), z = -70 - acaso(i * 3 + 2) * 90;
+    const alturaPredio = Math.pow(acaso(i * 7), 3) * 9; // prédios baixos ao longe, poucos altos
+    p.setXYZ(i, x, 0.3 + alturaPredio, z);
+    const longe = 1 - (-z - 70) / 110; // o que está mais longe brilha menos
+    const cor = new THREE.Color(COR.cidade[i % COR.cidade.length]).multiplyScalar((0.2 + acaso(i * 11) * 0.5) * longe);
+    c.setXYZ(i, cor.r, cor.g, cor.b);
+  }
+}
+const corCidade = Float32Array.from(cidade.geometry.attributes.color.array);
+
+const v = new THREE.Vector3();
+window.desenha = function (t) {
+  const fase = (t % DURACAO) / DURACAO; // 0 a 1; o último quadro emenda no primeiro
+
+  // Câmera baixa, olhando a estrada, com um balanço leve que também fecha o loop
+  const balanco = Math.sin(fase * Math.PI * 2);
+  // O lado calmo para o texto: no computador a estrada vai para a direita (o título fica à
+  // esquerda); no celular a câmera olha para baixo, o horizonte sobe e a estrada fica acima
+  // do texto, que ocupa a metade de baixo.
+  const desvio = retrato ? 0 : -3.4;
+  camera.position.set(desvio + 0.5 * balanco, retrato ? 3.4 : 2.6, 11);
+  camera.lookAt(desvio + 0.3 * balanco, retrato ? -13 : 0.9, -30);
+  // Ponto de luz muito perto da câmera vira uma bola borrada: apaga antes de chegar
+  const perto = (p) => { const d = p.distanceTo(camera.position); return Math.min(1, Math.max(0, (d - 6) / 8)); };
+
+  const pf = faixas.geometry.attributes.position, cf = faixas.geometry.attributes.color;
+  for (let i = 0; i < nTracos; i++) for (let k = 0; k < POR_TRACO; k++) {
+    const u = (i * ESPACO + fase * ESPACO + k * 0.09) / COMPRIMENTO;
+    noCaminho(u, 0, 0.03, v); pf.setXYZ(i * POR_TRACO + k, v.x, v.y, v.z);
+    const f = perto(v);
+    cf.setXYZ(i * POR_TRACO + k, ouro.r * f, ouro.g * f, ouro.b * f);
+  }
+  pf.needsUpdate = cf.needsUpdate = true;
+
+  const pr = rastros.geometry.attributes.position, cr = rastros.geometry.attributes.color;
+  RASTROS.forEach((r, i) => {
+    const cabeca = r.fase + r.sentido * fase; // uma volta inteira por loop
+    for (let k = 0; k < CAUDA; k++) {
+      noCaminho(cabeca - r.sentido * k * PASSO_CAUDA, r.lado, 0.55, v);
+      const forca = Math.pow(1 - k / CAUDA, 1.6) * perto(v);
+      pr.setXYZ(i * CAUDA + k, v.x, v.y, v.z);
+      cr.setXYZ(i * CAUDA + k, r.cor.r * forca, r.cor.g * forca, r.cor.b * forca);
+    }
+  });
+  pr.needsUpdate = cr.needsUpdate = true;
+
+  const cc = cidade.geometry.attributes.color;
+  for (let i = 0; i < nCidade; i++) {
+    const pisca = 0.75 + 0.25 * Math.sin(2 * Math.PI * (fase * (1 + (i % 3)) + acaso(i * 13)));
+    cc.setXYZ(i, corCidade[i * 3] * pisca, corCidade[i * 3 + 1] * pisca, corCidade[i * 3 + 2] * pisca);
+  }
+  cc.needsUpdate = true;
+
+  renderer.render(cena, camera);
+};
+
+window.DURACAO = DURACAO;
+window.cenaPronta = Promise.resolve();
+window.desenha(0);
+</script>
+</body>
+</html>

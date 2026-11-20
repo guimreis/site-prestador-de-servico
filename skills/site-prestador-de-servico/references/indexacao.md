@@ -34,7 +34,8 @@ Nunca `<meta name="robots" content="noindex">`.
 Use o tipo mais específico do schema.org para o serviço: `HousePainter`, `Electrician`,
 `Plumber`, `Locksmith`, `RoofingContractor`, `GeneralContractor`, `HVACBusiness`,
 `Dentist`, `AccountingService`, `LegalService`, `HairSalon`, `AutoRepair`. Não achou? Use
-`LocalBusiness`.
+`LocalBusiness` (transporte executivo e táxi: `LocalBusiness`, com cada serviço como
+`TaxiService` ou `Service` dentro do `hasOfferCatalog`).
 
 ```html
 <script type="application/ld+json">
@@ -135,7 +136,7 @@ mais curto.
 ```
 /*
   Strict-Transport-Security: max-age=31536000
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; media-src 'self'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()

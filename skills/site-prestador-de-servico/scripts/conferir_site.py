@@ -15,8 +15,14 @@ Bloqueia (saida 1):
   6. Mais de um h1, ou nenhum.
   7. JSON-LD que nao abre, ou perguntas do FAQPage diferentes das da pagina.
   8. <style> ou <script> dentro do HTML (a politica de seguranca do _headers bloqueia).
+  9. Foto como fundo no CSS (url(...jpg/webp/png)): baixa antes da primeira tela.
+ 10. Arquivo de fonte acima de 60 KB: atrasa o titulo no celular.
+ 12. index.html sem <link rel="icon">: o navegador pede /favicon.ico, leva 404 e o
+     Lighthouse tira ponto de boas praticas.
+ 11. Video acima de 1,5 MB, ou <video> sem muted e playsinline (com som ou fora do lugar no iPhone).
 
-Avisa (nao bloqueia): PREENCHER-ENDERECO, o endereco que so existe depois da primeira
+Avisa (nao bloqueia): CSS ou JavaScript sem numero de versao (style.css?v=1), e
+PREENCHER-ENDERECO, o endereco que so existe depois da primeira
 publicacao. Publique, rode de novo com --endereco e publique outra vez.
 """
 
@@ -28,9 +34,12 @@ import re
 import sys
 
 LIMITE_IMAGEM = 300 * 1024
+LIMITE_FONTE = 60 * 1000
+LIMITE_VIDEO = 1500 * 1000
+RE_FUNDO_FOTO = re.compile(r"url\(\s*[\"']?([^)\"']+\.(?:jpe?g|png|webp|avif|gif))", re.I)
 EXT_DO_SITE = {".html", ".css", ".js", ".txt", ".xml", ".json", ".webmanifest",
                ".jpg", ".jpeg", ".png", ".webp", ".avif", ".svg", ".ico", ".gif",
-               ".woff2", ".woff"}
+               ".woff2", ".woff", ".mp4", ".webm"}
 NOMES_DO_SITE = {"_headers", "_redirects"}
 NOMES_PROIBIDOS = re.compile(r"(?i)briefing|pesquisa|retomada|perguntas|credito|rascunho|\.md$")
 RE_PREENCHER = re.compile(r"\[PREENCHER:\s*([^\]]+)\]")
@@ -59,18 +68,29 @@ def limpa(t):
     return " ".join(_html.unescape(re.sub(r"<[^>]+>", " ", t)).split())
 
 
-def confere_html(caminho, site, erros):
+def confere_html(caminho, site, erros, avisos):
     html = texto_de(caminho) or ""
     nome = os.path.relpath(caminho, site)
     if nome == "index.html":
         h1 = len(re.findall(r"<h1\b", html, re.I))
         if h1 != 1:
             erros.append("%s: %d h1 (precisa de exatamente um)" % (nome, h1))
+        if not re.search(r"<link\b[^>]*rel=\"[^\"]*icon[^\"]*\"", html, re.I):
+            erros.append("%s: sem <link rel=\"icon\" href=\"img/icone.png\">. Sem ele o navegador "
+                         "pede /favicon.ico, leva 404 e o Lighthouse tira ponto." % nome)
     if re.search(r"<style\b", html, re.I):
         erros.append("%s: <style> dentro do HTML. Mova para style.css." % nome)
     for m in re.finditer(r"<script\b([^>]*)>", html, re.I):
         if "ld+json" not in m.group(1) and "src=" not in m.group(1):
             erros.append("%s: <script> dentro do HTML. Mova para app.js." % nome)
+    for m in re.finditer(r"<(?:link|script)\b[^>]*?(?:href|src)=\"([^\"]+\.(?:css|js))\"", html, re.I):
+        if not re.match(r"(?i)https?://", m.group(1)):
+            avisos.append("%s: %s sem numero de versao. Use %s?v=1 e suba a cada mudanca, "
+                          "senao o navegador mostra a versao velha." % (nome, m.group(1), m.group(1)))
+    for m in re.finditer(r"<video\b[^>]*>", html, re.I):
+        falta = [a for a in ("muted", "playsinline") if not re.search(r"\s%s(\s|=|>)" % a, m.group(0), re.I)]
+        if falta:
+            erros.append("%s: <video> sem %s. Video da capa e mudo e toca no lugar, no celular tambem." % (nome, " e ".join(falta)))
     if re.search(r"\sstyle=\"", html, re.I):
         erros.append("%s: atributo style= no HTML. A politica de seguranca bloqueia; use classe." % nome)
 
@@ -91,7 +111,8 @@ def confere_html(caminho, site, erros):
         if falta:
             erros.append("%s: imagem %s sem %s" % (nome, alvo, ", ".join(falta)))
         if src and not re.match(r"(?i)https?:|data:", alvo):
-            if not os.path.isfile(os.path.join(os.path.dirname(caminho), alvo.split("?")[0])):
+            base = site if alvo.startswith("/") else os.path.dirname(caminho)
+            if not os.path.isfile(os.path.join(base, alvo.split("?")[0].lstrip("/"))):
                 erros.append("%s: imagem %s nao existe na pasta" % (nome, alvo))
 
     blocos = re.findall(r"<script[^>]*ld\+json[^>]*>(.*?)</script>", html, re.S | re.I)
@@ -148,10 +169,14 @@ def main():
         ext = os.path.splitext(base)[1].lower()
         if NOMES_PROIBIDOS.search(base) or (ext not in EXT_DO_SITE and base not in NOMES_DO_SITE):
             erros.append("%s: nao e arquivo do site. Tire de site/ (vai para _projeto/)." % rel)
+        if ext in {".mp4", ".webm"} and os.path.getsize(c) > LIMITE_VIDEO:
+            erros.append("%s: video com %d KB (limite 1500). Encurte o loop ou suba o crf no ffmpeg." % (rel, os.path.getsize(c) // 1000))
+        if ext in {".woff2", ".woff"} and os.path.getsize(c) > LIMITE_FONTE:
+            erros.append("%s: fonte com %d KB (limite 60). Use o arquivo latin-wght-normal." % (rel, os.path.getsize(c) // 1000))
         if ext in {".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif"} and os.path.getsize(c) > LIMITE_IMAGEM:
             erros.append("%s: %d KB (limite 300 KB)" % (rel, os.path.getsize(c) // 1024))
         t = texto_de(c) if ext not in {".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif",
-                                        ".woff2", ".woff", ".ico"} else None
+                                        ".woff2", ".woff", ".ico", ".mp4", ".webm"} else None
         if not t:
             continue
         for m in RE_PREENCHER.finditer(t):
@@ -161,7 +186,11 @@ def main():
         if re.search(r"noindex", t, re.I):
             erros.append("%s: noindex" % rel)
         if ext == ".html":
-            confere_html(c, site, erros)
+            confere_html(c, site, erros, avisos)
+        if ext == ".css":
+            for m in RE_FUNDO_FOTO.finditer(t):
+                erros.append("%s: foto como fundo no CSS (%s). Fundo de CSS baixa antes da primeira tela; "
+                             "use <img loading=\"lazy\"> dentro da secao." % (rel, m.group(1)))
 
     print("# Conferencia de %s\n" % site)
     if erros:
@@ -171,7 +200,7 @@ def main():
     else:
         print("Nada bloqueia a publicacao.")
     if avisos:
-        print("\nSo existe depois de publicar (rode de novo com --endereco):")
+        print("\nAvisos (nao bloqueiam):")
         for a in avisos:
             print("  - " + a)
     return 1 if erros else 0
